@@ -62,6 +62,21 @@ js/main.js            the per-frame loop tying it all together
 
 The scripts are plain (non-module) scripts sharing global scope, loaded in dependency order — deliberately simple, no build step. `js/vision-loader.js` is the one ES module because MediaPipe only ships that way.
 
+## Background
+
+This project started at a Vibe Coders Tokyo event hosted at Google's Shibuya office, themed around Gemma and local LLM models. The idea came out of a conversation there about self-driving vehicles adapting and evolving through deep learning patterns — NeuroRunner is a browser-sized take on the same principle: a system that learns its user instead of shipping with fixed rules.
+
+The game was built against this design brief:
+
+- Use MediaPipe Face Landmarker to extract facial landmarks.
+- Train a lightweight TensorFlow.js neural network during the calibration phase using the player's own gestures (left, right, jump, duck, idle).
+- Perform real-time gesture classification instead of relying on fixed thresholds.
+- Display the model's confidence score and use it to filter uncertain predictions.
+- Adapt game difficulty with a lightweight model that adjusts obstacle frequency and speed based on player performance, reaction time and success rate.
+- All inference and training run locally in the browser with no backend, maintaining at least 30 FPS during gameplay.
+
+Thanks to Vibe Coders Tokyo for hosting, and to the presenters Ju-yeong Ji and Alastair Tse.
+
 ## License
 
 MIT
