@@ -1,0 +1,32 @@
+:root { --neon-pink: #ff00ff; --neon-blue: #00ffff; --neon-green: #00ff00; --bg-dark: #0a0a0f; }
+body, html { margin: 0; padding: 0; overflow: hidden; background: var(--bg-dark); font-family: 'Press Start 2P', cursive; color: white; user-select: none; }
+#crt-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 100; }
+
+#game-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; }
+canvas { display: block; }
+#gameCanvas { image-rendering: pixelated; image-rendering: crisp-edges; background: #000; }
+
+.overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: rgba(0,0,0,0.9); z-index: 10; overflow: auto; }
+.hidden { display: none !important; }
+
+h1 { font-size: 2rem; color: var(--neon-pink); text-shadow: 0 0 20px var(--neon-pink); margin-bottom: 1.2rem; }
+.btn { padding: 15px 25px; background: none; border: 4px solid var(--neon-blue); color: var(--neon-blue); font-family: 'Press Start 2P'; cursor: pointer; font-size: 0.8rem; transition: 0.2s; box-shadow: 0 0 10px var(--neon-blue); margin: 5px; }
+.btn:hover { background: var(--neon-blue); color: black; }
+.btn:disabled { border-color: #444; color: #444; box-shadow: none; cursor: not-allowed; }
+.btn.active { background: var(--neon-green); border-color: var(--neon-green); color: black; }
+
+#calib-ui { display: flex; gap: 24px; align-items: flex-start; }
+#cam-column { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#calib-box { width: 320px; height: 240px; border: 4px solid white; position: relative; background: #111; overflow: hidden; }
+/* video is only a hidden source for MediaPipe; the canvas renders the feed */
+#webcam-feed { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+#preview-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+#avatar-canvas { width: 320px; height: 240px; border: 2px solid rgba(255, 0, 255, 0.4); background: #000; image-rendering: pixelated; image-rendering: crisp-edges; }
+#avatar-label { color: var(--neon-blue); font-size: 0.55rem; letter-spacing: 2px; text-shadow: 0 0 8px var(--neon-blue); }
+
+.calib-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#start-game-btn { grid-column: span 2; margin-top: 20px; font-size: 1.2rem; border-color: var(--neon-green); color: var(--neon-green); }
+
+#hud { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; pointer-events: none; z-index: 5; font-size: 0.8rem; text-shadow: 0 0 8px #00ffff; }
+.hud-item { color: var(--neon-blue); }
