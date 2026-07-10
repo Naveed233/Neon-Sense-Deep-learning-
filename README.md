@@ -4,6 +4,8 @@ An endless runner you play with your face. Tilt your head to switch lanes, duck 
 
 Everything runs client-side: face tracking, model training, inference, and the game itself. No backend, no accounts, and no video ever leaves your machine.
 
+**Play it here:** https://naveed233.github.io/Neon-Sense-Deep-learning-/ — Chrome recommended, webcam required. The first load takes a few seconds while TensorFlow.js and MediaPipe download.
+
 ## How it works
 
 1. **Face tracking.** MediaPipe Face Landmarker reads 478 facial landmarks from your webcam every frame.
