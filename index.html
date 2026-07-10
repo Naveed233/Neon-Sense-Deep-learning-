@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON-SENSE // AI RUNNER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0"></script>
+    <script type="module" src="js/vision-loader.js"></script>
+</head>
+<body>
+
+    <div id="crt-overlay"></div>
+
+    <div id="hud" class="hidden">
+        <div>SCORE: <span id="score-val" class="hud-item">0</span></div>
+        <div>LVL: <span id="lvl-val" class="hud-item">1</span></div>
+        <div>SPD: <span id="spd-val" class="hud-item">x1.00</span></div>
+        <div>AI: <span id="gesture-val" class="hud-item">--</span> <span id="conf-val" class="hud-item">0%</span></div>
+        <div>FPS: <span id="fps-val" class="hud-item">0</span></div>
+    </div>
+
+    <div id="game-container">
+        <div id="screen-title" class="overlay">
+            <h1>NEON SENSE</h1>
+            <p style="margin-bottom: 30px; line-height: 1.6; font-size: 0.7rem;">TILT HEAD LEFT/RIGHT | DUCK | BLINK JUMP</p>
+            <button class="btn" onclick="initSystem()">INITIALIZE AI SYSTEM</button>
+        </div>
+
+        <div id="screen-calib" class="overlay hidden">
+            <h1>NEURAL CALIBRATION</h1>
+            <div id="calib-ui">
+                <div id="cam-column">
+                    <div id="calib-box">
+                        <video id="webcam-feed" autoplay playsinline muted></video>
+                        <canvas id="preview-canvas" width="320" height="240"></canvas>
+                    </div>
+                    <canvas id="avatar-canvas" width="160" height="120"></canvas>
+                    <div id="avatar-label">AI: &#9679; IDLE</div>
+                </div>
+                <div class="calib-controls">
+                    <button class="btn calib-btn" data-gesture="IDLE" onclick="startRecording('IDLE')">CALIB IDLE</button>
+                    <button class="btn calib-btn" data-gesture="LEFT" onclick="startRecording('LEFT')">CALIB LEFT</button>
+                    <button class="btn calib-btn" data-gesture="RIGHT" onclick="startRecording('RIGHT')">CALIB RIGHT</button>
+                    <button class="btn calib-btn" data-gesture="DUCK" onclick="startRecording('DUCK')">CALIB DUCK</button>
+                    <button class="btn calib-btn" data-gesture="JUMP" onclick="startRecording('JUMP')">CALIB JUMP</button>
+                    <button id="start-game-btn" class="btn" disabled onclick="startGame()">START GAME</button>
+                </div>
+            </div>
+            <p id="calib-status" style="margin-top: 16px; color: var(--neon-green); font-size: 0.6rem;">SELECT A GESTURE TO RECORD</p>
+        </div>
+
+        <div id="screen-gameover" class="overlay hidden">
+            <h1>SYSTEM CRASH</h1>
+            <p>SCORE: <span id="final-score">0</span></p>
+            <div>
+                <button class="btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="retryGame()">RETRY RUN</button>
+                <button class="btn" onclick="location.reload()">REBOOT</button>
+            </div>
+            <p style="margin-top: 16px; font-size: 0.5rem; color: #888;">RETRY KEEPS YOUR CALIBRATION</p>
+        </div>
+
+        <canvas id="gameCanvas" width="320" height="240"></canvas>
+    </div>
+
+    <script src="js/state.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/avatar.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
