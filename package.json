@@ -1,0 +1,18 @@
+{
+  "name": "neon-sense",
+  "version": "1.0.0",
+  "description": "An endless runner controlled by head gestures, with a gesture classifier trained in the browser.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "lint": "eslint .",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0"
+  }
+}

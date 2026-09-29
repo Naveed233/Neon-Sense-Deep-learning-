@@ -1,5 +1,2 @@
+node_modules/
 .DS_Store
-
-# early single-file prototypes, superseded by index.html + js/
-game.html
-game-fixed.html
