@@ -1,84 +1,96 @@
-# NeuroRunner
+# Neon Sense
 
-An endless runner you play with your face. Tilt your head to switch lanes, duck to slide under barriers, blink to jump. There is no pre-trained gesture model behind it — the game trains a small neural network on *you*, in the browser, in about a minute, before every session.
+[![CI](https://github.com/Naveed233/Neon-Sense-Deep-learning-/actions/workflows/ci.yml/badge.svg)](https://github.com/Naveed233/Neon-Sense-Deep-learning-/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Everything runs client-side: face tracking, model training, inference, and the game itself. No backend, no accounts, and no video ever leaves your machine.
+An endless runner you steer with your head. Tilt left or right to change lanes, duck under bars, blink to jump over barriers.
 
-**Play it here:** https://naveed233.github.io/Neon-Sense-Deep-learning-/ — Chrome recommended, webcam required. The first load takes a few seconds while TensorFlow.js and MediaPipe download.
+Instead of hard-coded thresholds on head angle, the game trains a small neural network on the player during a short calibration step, then classifies their gestures live. Face tracking, training and inference all run in the browser. There is no backend and the webcam feed never leaves the page.
+
+**[Play it in the browser](https://naveed233.github.io/Neon-Sense-Deep-learning-/)** (Chrome recommended). No webcam? There is a keyboard/touch mode.
+
+![Gameplay](docs/screenshot.png)
 
 ## How it works
 
-1. **Face tracking.** MediaPipe Face Landmarker reads 478 facial landmarks from your webcam every frame.
-2. **Feature extraction.** Each frame is reduced to a ~20-value feature vector: key points (nose, eyes, chin, forehead) expressed relative to the nose and normalized by face width, plus eye-openness distances for blink detection. This makes the features stable regardless of where you sit or how far you are from the camera.
-3. **Calibration = training.** You record five poses — idle, left, right, duck, jump — about 40 frames each. A small TensorFlow.js network (two hidden layers, softmax over the five gestures) is trained on those samples directly in the page. Training takes a couple of seconds per gesture.
-4. **Live classification.** During play the model classifies your face every frame. Instead of hand-tuned angle thresholds, the decision is the model's own softmax output, and a 70% confidence gate filters out uncertain predictions so noise doesn't twitch the runner. The current prediction and confidence are always visible in the HUD.
-5. **Adaptive difficulty.** A small controller estimates your skill from two live signals — reaction time (how quickly you clear a threat once it's in range, tracked as an exponential moving average) and your current dodge streak. The estimate drives obstacle speed and spawn frequency, and drops when you crash so the game backs off. It persists across retries, so it keeps tracking you between runs.
+1. **Landmarks.** [MediaPipe Face Landmarker](https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker) returns 478 face landmarks per camera frame.
+2. **Features.** Each frame is reduced to 18 numbers: eight key points (eye corners, chin, forehead) measured from the nose and divided by face width, plus the opening of each eye. Because of that normalisation, the features don't change when you move around the frame or sit closer to the camera (there are tests for this).
+3. **Calibration.** The player holds each pose (idle, left, right, duck, jump) for 40 frames. After each pose the classifier is retrained: a TensorFlow.js network with two hidden layers (16 and 8 units) and a softmax over the five gestures, trained on standardised features. Retraining takes about 0.3 s.
+4. **Inference.** During play every new camera frame is classified. Predictions under 70% confidence are ignored, which stops noisy frames from moving the runner. The HUD shows the current prediction and its confidence.
+5. **Adaptive difficulty.** A controller estimates skill from reaction time (how long it takes to get clear of an obstacle once it's in range, smoothed with an exponential moving average) and the current dodge streak. That estimate sets obstacle speed and spawn rate. Crashing lowers it, and it carries over between retries.
 
-The whole loop — detection, inference, physics, rendering — runs once per animation frame. The game renders at a 320x240 internal resolution upscaled with crisp pixels, which keeps drawing cheap; there is an FPS counter in the HUD if you want to check it holds 30+ on your machine.
+A small pixel runner on the calibration screen copies whatever the model currently predicts, so you can check the calibration before starting.
 
-## Run it locally
+## Running locally
 
-The browser only exposes the camera to secure contexts, so opening the HTML file directly (`file://`) will not work. Serve it over localhost instead.
-
-With Python (preinstalled on macOS):
+The browser only allows camera access on `https://` or `localhost`, so open the game through a local server rather than as a file:
 
 ```
-cd NeuroRunner
+git clone https://github.com/Naveed233/Neon-Sense-Deep-learning-.git
+cd Neon-Sense-Deep-learning-
 python3 -m http.server 8000
 ```
 
-Then open http://localhost:8000 in Chrome and allow camera access when prompted.
+Then open http://localhost:8000. Any static server works (`npx serve`, for example). There is no build step.
 
-Any static file server works the same way, for example `npx serve`.
+TensorFlow.js and MediaPipe are loaded from jsDelivr, so the first load needs a network connection.
 
-Notes:
+## Controls
 
-- Chrome or Edge recommended; MediaPipe's GPU path is most reliable there.
-- You need an internet connection on first load — TensorFlow.js, MediaPipe and the face model are pulled from CDNs.
-- On macOS, if the camera view stays black, check System Settings > Privacy & Security > Camera and make sure your browser is allowed.
+| Action | Webcam | Keyboard | Touch |
+| --- | --- | --- | --- |
+| Change lane | Tilt head | Left / Right, A / D | Swipe left / right |
+| Jump (low barriers) | Blink | Up, W, Space | Swipe up or tap |
+| Duck (overhead bars) | Duck | Down, S | Swipe down |
 
-## Playing
+Pink walls need a lane change.
 
-1. Click INITIALIZE AI SYSTEM and allow the camera.
-2. Record all five gestures. Hold each pose while it records — exaggerate them, especially left/right tilt.
-3. Test before starting: the small pixel runner under the camera preview mirrors what the model sees. If it doesn't copy you reliably, re-record the gestures it confuses (re-recording adds more training data).
-4. Start the game. Pink walls: change lane. Low green barriers: jump. Green overhead bars: duck.
-5. After a crash, RETRY RUN restarts instantly and keeps your calibration; REBOOT starts over from scratch.
-
-Arrow keys also work during play, which is useful for checking whether a problem is in the game or in the gesture detection.
-
-## Project structure
+## Development
 
 ```
-index.html            markup and script loading order
-css/style.css         all styling
-js/vision-loader.js   imports MediaPipe (ES module) and exposes it globally
-js/state.js           shared config, game state, DOM references
-js/audio.js           procedural sound effects (Web Audio oscillators)
-js/renderer.js        pixel-art scene + runner renderer, shared by game and calibration
-js/ai.js              camera, face tracking, feature extraction, model training
-js/avatar.js          calibration screen: webcam preview overlay + mirroring avatar
-js/game.js            game logic, obstacles, collision, adaptive difficulty
-js/main.js            the per-frame loop tying it all together
+npm install
+npm test       # unit tests (node:test)
+npm run lint   # ESLint
 ```
 
-The scripts are plain (non-module) scripts sharing global scope, loaded in dependency order — deliberately simple, no build step. `js/vision-loader.js` is the one ES module because MediaPipe only ships that way.
+CI runs both on every push.
+
+```
+index.html          page structure
+css/style.css
+js/
+  main.js           wiring and the frame loop
+  config.js         gestures, levels, thresholds
+  tracker.js        webcam + MediaPipe (loaded on demand)
+  features.js       landmark features and standardisation
+  classifier.js     TensorFlow.js gesture model
+  calibration.js    calibration screen
+  difficulty.js     adaptive difficulty
+  game.js           game state, physics, collisions
+  renderer.js       pixel-art drawing, shared by game and calibration
+  input.js          keyboard and touch controls
+  audio.js          synthesised sound effects
+tests/              unit tests for features, difficulty and game logic
+```
+
+## Design notes
+
+- **A model per player.** A general gesture model would have to cope with every face, camera angle and lighting setup. A model trained on 200 frames of one person in one room has a much easier job, and that's why a network this small is enough.
+- **CPU backend for TensorFlow.js.** The network is tiny, so running it on the GPU mostly costs a readback every frame. The CPU backend classifies a frame in about 0.04 ms and leaves the GPU to MediaPipe.
+- **Detection only on new camera frames.** The camera delivers about 30 frames per second while the display may refresh at 60 or 120 Hz. Detection runs only when the video frame changes.
+- **Frame-rate independent physics.** All movement is scaled by elapsed time, and collisions check whether an obstacle crossed the player's position during the step rather than whether it is inside a range, so fast obstacles can't skip through.
+- **Low internal resolution.** The game renders at 320x240 and is scaled up with nearest-neighbour filtering. That keeps drawing cheap and gives the pixel-art look.
+
+## Limitations
+
+- Gesture accuracy depends on lighting and on how distinct the recorded poses are. Re-recording a pose adds more samples rather than replacing them.
+- The calibration isn't saved between page loads.
+- MediaPipe's GPU delegate is most reliable in Chromium-based browsers; the game falls back to CPU if it fails.
 
 ## Background
 
-This project started at a Vibe Coders Tokyo event hosted at Google's Shibuya office, themed around Gemma and local LLM models. The idea came out of a conversation there about self-driving vehicles adapting and evolving through deep learning patterns — NeuroRunner is a browser-sized take on the same principle: a system that learns its user instead of shipping with fixed rules.
-
-The game was built against this design brief:
-
-- Use MediaPipe Face Landmarker to extract facial landmarks.
-- Train a lightweight TensorFlow.js neural network during the calibration phase using the player's own gestures (left, right, jump, duck, idle).
-- Perform real-time gesture classification instead of relying on fixed thresholds.
-- Display the model's confidence score and use it to filter uncertain predictions.
-- Adapt game difficulty with a lightweight model that adjusts obstacle frequency and speed based on player performance, reaction time and success rate.
-- All inference and training run locally in the browser with no backend, maintaining at least 30 FPS during gameplay.
-
-Thanks to Vibe Coders Tokyo for hosting, and to the presenters Ju-yeong Ji and Alastair Tse.
+The idea came out of a Vibe Coders Tokyo event at Google's Shibuya office, themed around Gemma and running models locally. A conversation there about self-driving systems that adapt through deep learning made me want to try the same idea at a much smaller scale: a game that learns its player instead of shipping fixed rules. Thanks to the organisers and to the presenters, Ju-yeong Ji and Alastair Tse.
 
 ## License
 
-MIT
+[MIT](LICENSE)
